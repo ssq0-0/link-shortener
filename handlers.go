@@ -6,9 +6,15 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 )
 
-var LINKS = make(map[string]string)
+type SafeWriter struct {
+	mu    sync.RWMutex
+	Links map[string]string
+}
+
+// var LINKS = make(map[string]string)
 
 type LinkRequest struct {
 	Link string `json:"link"`
