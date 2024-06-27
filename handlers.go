@@ -69,38 +69,25 @@ func RegisterHandlers() {
 			return
 		}
 
-		var wg sync.WaitGroup
-
-		wg.Add(1)
-		go func(link string) {
-			defer wg.Done()
-			response, err := globalSafeWriter.Parser(link)
-			if err != nil {
-				http.Error(w, "Can't short this link", http.StatusBadRequest)
-				return
-			}
-			fmt.Fprintf(w, "Shorted link: http://127.0.0.1:8000/%s", response)
-		}(link)
-		wg.Wait()
+		response, err := globalSafeWriter.Parser(link)
+		if err != nil {
+			http.Error(w, "Can't short this link", http.StatusBadRequest)
+			return
+		}
+		fmt.Fprintf(w, "Shorted link: http://127.0.0.1:8000/%s", response)
 		fmt.Println(globalSafeWriter.Links)
 	})
 
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		token := strings.TrimPrefix(r.URL.Path, "/")
-		var wg sync.WaitGroup
 
-		wg.Add(1)
-		go func(token string) {
-			defer wg.Done()
-			response, err := globalSafeWriter.CheckerInMap(token)
-			if err != nil || response == "" {
-				fmt.Println(response)
-				http.Error(w, "ShortLink time expired", http.StatusBadRequest)
-				return
-			} else {
-				http.Redirect(w, r, response, http.StatusFound)
-			}
-		}(token)
-		wg.Wait()
+		response, err := globalSafeWriter.CheckerInMap(token)
+		if err != nil || response == "" {
+			fmt.Println(response)
+			http.Error(w, "ShortLink time expired", http.StatusBadRequest)
+			return
+		} else {
+			http.Redirect(w, r, response, http.StatusFound)
+		}
 	})
 }
